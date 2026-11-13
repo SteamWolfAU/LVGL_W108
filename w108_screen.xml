@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<screen name="w108_screen">
+    <view>
+        <!-- 1. Master horizontally ribbed backplate -->
+        <lv_image src="img_w108_bg" width="100%" height="100%" align="center"/>
+
+        <!-- ================= LEFT POD (500x500) ================= -->
+        <lv_obj width="#dial_size" height="#dial_size" align="left_mid" x="120" styles="style_transparent_pod">
+            <!-- Dial Face Artwork -->
+            <lv_image src="img_left_face" align="center"/>
+
+            <!-- Combined Quad Needles (Dynamic Rotation angle binding) -->
+            <!-- 2700 tenths of a degree mapping logic -->
+            <lv_image src="img_orange_needle" align="center" pivot_x="12" pivot_y="180" 
+                      bind_angle="{subj_water_temp - 100} / 150 * 900 - 1350"/> <!-- Temp sweeps bottom-left -->
+            <lv_image src="img_orange_needle" align="center" pivot_x="12" pivot_y="180" 
+                      bind_angle="{subj_fuel} / 100 * 900 - 450"/> <!-- Fuel sweeps top-left -->
+            <lv_image src="img_orange_needle" align="center" pivot_x="12" pivot_y="180" 
+                      bind_angle="{subj_oil} / 45 * 900 + 450"/> <!-- Oil sweeps right arc -->
+
+            <!-- Warning Lights (Dynamic color changes based on active subject states) -->
+            <lv_label text="CHECK ENGINE" align="center" y="140" 
+                      bind_style_text_color="subj_is_mil == 1 ? #color_warn_orange : 0x221100"/>
+            <lv_label text="BRAKE" align="center" x="-60" y="110" 
+                      bind_style_text_color="subj_is_brake == 1 ? #color_warn_red : 0x220000"/>
+            <lv_label text="GENER." align="center" x="60" y="110" 
+                      bind_style_text_color="subj_is_generator == 1 ? #color_warn_red : 0x220000"/>
+        </lv_obj>
+
+        <!-- ================= SPEEDOMETER POD (500x500) ================= -->
+        <lv_obj width="#dial_size" height="#dial_size" align="right_mid" x="-120" styles="style_transparent_pod">
+            <!-- Speedo Face Artwork -->
+            <lv_image src="img_speedo_face" align="center"/>
+
+            <!-- Rotating Speedo Needle -->
+            <lv_image src="img_orange_needle" align="center" pivot_x="12" pivot_y="180" 
+                      bind_angle="{subj_speed_mph} / 160 * 2700 - 1350"/>
+
+            <!-- Dynamic Odometer displays layered over cutouts -->
+            <lv_label text="092107" align="center" y="-50" styles="style_odometer"/>
+            <lv_label text="000.3" align="center" y="20" styles="style_odometer"/>
+        </lv_obj>
+
+        <!-- ================= MIDDLE DIAGNOSTIC SECTION ================= -->
+        <!-- Central area replacing the old mechanical gear indicator slot -->
+        <lv_obj width="240" height="160" align="bottom_mid" y="-80" 
+                bg_color="#color_msg_terminal" border_color="#color_chrome" border_width="3" radius="6">
+            
+            <!-- Shift Light bar (Standard Green, warning Red if > 5500 RPM) -->
+            <lv_bar width="210" height="20" align="top_mid" y="10" 
+                    bg_color="0x222222" 
+                    bind_value="{subj_rpm} / 5500 * 100" 
+                    bind_style_bg_color="subj_rpm > 5500 ? #color_warn_red : 0x00FF00" 
+                    style_selector="indicator"/>
+
+            <!-- Real-Time Decoded CAN diagnostics terminal logs -->
+            <lv_label align="bottom_left" x="5" y="-10" text_color="#color_text_green" 
+                      bind_text="subj_diag_msg"/>
+        </lv_obj>
+    </view>
+</screen>

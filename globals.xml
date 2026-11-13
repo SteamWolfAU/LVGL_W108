@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<globals name="w108_globals">
+    <!-- Constants & Design Colors (Retro VDO Palette) -->
+    <consts>
+        <color name="color_vintage_black" value="0x111111"/>
+        <color name="color_vintage_white" value="0xEBE7DF"/>
+        <color name="color_chrome" value="0xD1D5DB"/>
+        <color name="color_warn_red" value="0xDF2020"/>
+        <color name="color_warn_orange" value="0xE67E22"/>
+        <color name="color_needle_orange" value="0xFA783E"/>
+        <color name="color_msg_terminal" value="0x0D0D0D"/>
+        <color name="color_text_green" value="0x00FF66"/>
+        <int name="dial_size" value="500"/>
+    </consts>
+
+    <!-- Map named external image files -->
+    <images>
+        <file name="img_w108_bg" src_path="w108_bg.png"/>
+        <file name="img_left_face" src_path="w108_left_face.png"/>
+        <file name="img_speedo_face" src_path="w108_speedo_face.png"/>
+        <file name="img_orange_needle" src_path="w108_orange_needle.png"/>
+    </images>
+
+    <!-- Reusable Styles Sheets -->
+    <styles>
+        <style name="style_transparent_pod" bg_opa="0" border_width="0" radius="0"/>
+        <style name="style_odometer" text_color="0x000000" bg_color="#color_vintage_white" bg_opa="255" pad_all="4" text_letter_space="4"/>
+        <style name="style_warn_dim" text_color="0x331111"/>
+        <style name="style_warn_active_red" text_color="#color_warn_red"/>
+        <style name="style_warn_active_orange" text_color="#color_warn_orange"/>
+    </styles>
+
+    <!-- Data Binding Subjects (For testing telemetry values in the browser) -->
+    <subjects>
+        <float name="subj_speed_mph" value="55.0"/>
+        <float name="subj_rpm" value="2200.0"/>
+        <float name="subj_water_temp" value="175.0"/>
+        <float name="subj_fuel" value="75.0"/>
+        <float name="subj_oil" value="30.0"/>
+        <int name="subj_is_mil" value="0"/>
+        <int name="subj_is_brake" value="0"/>
+        <int name="subj_is_generator" value="0"/>
+        <string name="subj_diag_msg" value="CAN ACTIVE\nSYS VOLT: 14.1V\nNO ERRORS"/>
+    </subjects>
+</globals>

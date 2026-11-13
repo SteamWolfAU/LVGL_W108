@@ -4,20 +4,19 @@ This is a static LVGL 9 XML layout mockup of a classic W108/W109 instrument clus
 
 ## Load in the LVGL viewer/editor
 
-Open the **repository root as the project folder** (the folder containing `project.xml` and `globals.xml`). The screen is in `screens/w108_screen.xml`; PNG paths in `globals.xml` are project-root-relative under `assets/`.
+Open the **repository root as the project folder** (the folder containing `project.xml` and `globals.xml`). The project screen is `screens/w108_screen.xml`. The root-level `w108_screen.xml` is kept as a valid duplicate for viewers that open a selected XML file directly.
 
 Expected project layout:
 
 ```text
 project.xml
 globals.xml
+w108_screen.xml
 screens/w108_screen.xml
 assets/*.png
 ```
 
-If importing an archive, ZIP those files and preserve the `screens/` and `assets/` folder names. The target display is 1920 × 720, so use fit/zoom-to-screen if the preview viewport is smaller.
-
-The PNGs are registered with `<data>` entries in `globals.xml` for viewer/editor conversion. If images still fail to load, check the viewer's import/asset panel for a missing-file or image-decoder error and confirm it imported the repository root rather than only the screen XML.
+If importing an archive, ZIP the XML files and `assets/` directory, preserving folder names. The target display is 1920 × 720, so use fit/zoom-to-screen if the preview viewport is smaller. PNGs are registered as `<data>` in `globals.xml`, with paths relative to the project root.
 
 ## Firmware status
 

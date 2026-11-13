@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <globals name="w108_globals">
-    <!-- Constants & Design Colors (Retro VDO Palette) -->
+    <!-- Constants and colors for the classic VDO-style dashboard. -->
     <consts>
         <color name="color_vintage_black" value="0x111111"/>
         <color name="color_vintage_white" value="0xEBE7DF"/>
@@ -13,15 +13,15 @@
         <int name="dial_size" value="500"/>
     </consts>
 
-    <!-- Map named external image files -->
+    <!-- Paths are relative to the project root; keep the assets/ prefix. -->
     <images>
-        <file name="img_w108_bg" src_path="w108_bg.png"/>
-        <file name="img_left_face" src_path="w108_left_face.png"/>
-        <file name="img_speedo_face" src_path="w108_speedo_face.png"/>
-        <file name="img_orange_needle" src_path="w108_orange_needle.png"/>
+        <file name="img_w108_bg" src_path="assets/w108_bg.png"/>
+        <file name="img_left_face" src_path="assets/w108_left_face.png"/>
+        <file name="img_speedo_face" src_path="assets/w108_speedo_face.png"/>
+        <file name="img_orange_needle" src_path="assets/w108_orange_needle.png"/>
+        <file name="img_clock_face" src_path="assets/w108_clock_face.png"/>
     </images>
 
-    <!-- Reusable Styles Sheets -->
     <styles>
         <style name="style_transparent_pod" bg_opa="0" border_width="0" radius="0"/>
         <style name="style_odometer" text_color="0x000000" bg_color="#color_vintage_white" bg_opa="255" pad_all="4" text_letter_space="4"/>
@@ -30,7 +30,7 @@
         <style name="style_warn_active_orange" text_color="#color_warn_orange"/>
     </styles>
 
-    <!-- Data Binding Subjects (For testing telemetry values in the browser) -->
+    <!-- Initial telemetry values make the dashboard useful in the web preview. -->
     <subjects>
         <float name="subj_speed_mph" value="55.0"/>
         <float name="subj_rpm" value="2200.0"/>
@@ -40,6 +40,6 @@
         <int name="subj_is_mil" value="0"/>
         <int name="subj_is_brake" value="0"/>
         <int name="subj_is_generator" value="0"/>
-        <string name="subj_diag_msg" value="CAN ACTIVE\nSYS VOLT: 14.1V\nNO ERRORS"/>
+        <string name="subj_diag_msg" value="CAN ACTIVE&#10;SYS VOLT: 14.1V&#10;NO ERRORS"/>
     </subjects>
 </globals>

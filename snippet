@@ -1,0 +1,311 @@
+#include "lvgl/lvgl.h"
+#include <stdio.h>
+
+/* Screen Resolution Definitions */
+#define SCREEN_WIDTH  1920
+#define SCREEN_HEIGHT 720
+
+/* Style Palette (Classic VDO colors) */
+#define COLOR_VINTAGE_BLACK lv_color_make(0x11, 0x11, 0x11)
+#define COLOR_VINTAGE_WHITE lv_color_make(0xEB, 0xE7, 0xDF)
+#define COLOR_CHROME        lv_color_make(0xD1, 0xD5, 0xDB)
+#define COLOR_WARN_RED      lv_color_make(0xDF, 0x20, 0x20)
+#define COLOR_WARN_ORANGE   lv_color_make(0xE6, 0x7E, 0x22)
+#define COLOR_NEEDLE_ORANGE lv_color_make(0xFA, 0x78, 0x3E)
+
+/* Widgets Global Pointers for CAN Update */
+static lv_obj_t *speed_meter;
+static lv_meter_indicator_t *speed_needle;
+static lv_obj_t *lbl_odo, *lbl_trip;
+
+static lv_obj_t *left_meter;
+static lv_meter_indicator_t *temp_needle;
+static lv_meter_indicator_t *fuel_needle;
+static lv_meter_indicator_t *oil_needle;
+
+static lv_obj_t *img_check_engine;
+static lv_obj_t *img_brake_warn;
+static lv_obj_t *img_gen_warn;
+
+static lv_obj_t *clock_hour_hand;
+static lv_obj_t *clock_min_hand;
+
+static lv_obj_t *can_status_box;
+static lv_obj_t *can_log_label;
+static lv_obj_t *shift_light;
+
+/* Background horizontal Ribs */
+static void draw_background_ribs(lv_obj_t *parent) {
+    lv_obj_t *bg = lv_obj_create(parent);
+    lv_obj_set_size(bg, SCREEN_WIDTH, SCREEN_HEIGHT);
+    lv_obj_set_style_bg_color(bg, COLOR_VINTAGE_BLACK, 0);
+    lv_obj_align(bg, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_clear_flag(bg, LV_OBJ_FLAG_SCROLLABLE);
+
+    /* Generate Ribbed Textured Lines */
+    for (int y = 0; y < SCREEN_HEIGHT; y += 12) {
+        lv_obj_t *rib = lv_obj_create(bg);
+        lv_obj_set_size(rib, SCREEN_WIDTH, 4);
+        lv_obj_align(rib, LV_ALIGN_TOP_LEFT, 0, y);
+        lv_obj_set_style_bg_color(rib, lv_color_make(0x22, 0x22, 0x22), 0);
+        lv_obj_set_style_border_width(rib, 0, 0);
+        lv_obj_set_style_radius(rib, 0, 0);
+    }
+}
+
+/* LEFT CLUSTER: Fuel, Temp, Oil Gauge */
+static void create_left_cluster(lv_obj_t *parent) {
+    /* Gauge Outer Rim & Background */
+    left_meter = lv_meter_create(parent);
+    lv_obj_set_size(left_meter, 500, 500);
+    lv_obj_align(left_meter, LV_ALIGN_LEFT_MID, 120, 0);
+    lv_obj_set_style_bg_color(left_meter, COLOR_VINTAGE_BLACK, 0);
+    lv_obj_set_style_border_color(left_meter, COLOR_CHROME, 0);
+    lv_obj_set_style_border_width(left_meter, 12, 0);
+    lv_obj_set_style_radius(left_meter, LV_RADIUS_CIRCLE, 0);
+
+    /* Scale 1: Temperature Gauge (Bottom Left Arc) */
+    lv_meter_scale_t *scale_temp = lv_meter_add_scale(left_meter);
+    lv_meter_set_scale_ticks(left_meter, scale_temp, 5, 2, 10, COLOR_VINTAGE_WHITE);
+    lv_meter_set_scale_range(left_meter, scale_temp, 100, 250, 60, 150);
+
+    /* Scale 2: Fuel Gauge (Top Left Arc) */
+    lv_meter_scale_t *scale_fuel = lv_meter_add_scale(left_meter);
+    lv_meter_set_scale_ticks(left_meter, scale_fuel, 4, 2, 10, COLOR_VINTAGE_WHITE);
+    lv_meter_set_scale_range(left_meter, scale_fuel, 0, 100, 60, 240); // 0 (R), 50 (2/4), 100 (4/4)
+
+    /* Scale 3: Oil Pressure (Right Arc) */
+    lv_meter_scale_t *scale_oil = lv_meter_add_scale(left_meter);
+    lv_meter_set_scale_ticks(left_meter, scale_oil, 4, 2, 10, COLOR_VINTAGE_WHITE);
+    lv_meter_set_scale_range(left_meter, scale_oil, 0, 45, 90, 315);
+
+    /* Add Vintage Labels */
+    lv_obj_t *lbl_tank = lv_label_create(left_meter);
+    lv_label_set_text(lbl_tank, "TANK");
+    lv_obj_set_style_text_color(lbl_tank, COLOR_VINTAGE_WHITE, 0);
+    lv_obj_align(lbl_tank, LV_ALIGN_CENTER, 0, -80);
+
+    lv_obj_t *lbl_temp = lv_label_create(left_meter);
+    lv_label_set_text(lbl_temp, "TEMP");
+    lv_obj_set_style_text_color(lbl_temp, COLOR_VINTAGE_WHITE, 0);
+    lv_obj_align(lbl_temp, LV_ALIGN_CENTER, -80, 0);
+
+    lv_obj_t *lbl_oil = lv_label_create(left_meter);
+    lv_label_set_text(lbl_oil, "OIL");
+    lv_obj_set_style_text_color(lbl_oil, COLOR_VINTAGE_WHITE, 0);
+    lv_obj_align(lbl_oil, LV_ALIGN_CENTER, 80, 0);
+
+    /* Add vintage style copper-orange needles */
+    temp_needle = lv_meter_add_needle_line(left_meter, scale_temp, 4, COLOR_NEEDLE_ORANGE, -20);
+    fuel_needle = lv_meter_add_needle_line(left_meter, scale_fuel, 4, COLOR_NEEDLE_ORANGE, -20);
+    oil_needle  = lv_meter_add_needle_line(left_meter, scale_oil, 4, COLOR_NEEDLE_ORANGE, -20);
+
+    /* Center cap */
+    lv_obj_t *center_cap = lv_obj_create(left_meter);
+    lv_obj_set_size(center_cap, 80, 80);
+    lv_obj_align(center_cap, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_set_style_bg_color(center_cap, COLOR_VINTAGE_BLACK, 0);
+    lv_obj_set_style_border_color(center_cap, COLOR_CHROME, 0);
+    lv_obj_set_style_border_width(center_cap, 4, 0);
+    lv_obj_set_style_radius(center_cap, LV_RADIUS_CIRCLE, 0);
+
+    /* Adding Indicator Lights at the Bottom Arc of Left Gauge */
+    img_brake_warn = lv_label_create(left_meter);
+    lv_label_set_text(img_brake_warn, "BRAKE");
+    lv_obj_align(img_brake_warn, LV_ALIGN_CENTER, -60, 110);
+    lv_obj_set_style_text_color(img_brake_warn, lv_color_darken(COLOR_WARN_RED, LV_OPA_50), 0); // starts dimmed
+
+    img_gen_warn = lv_label_create(left_meter);
+    lv_label_set_text(img_gen_warn, "GENER.");
+    lv_obj_align(img_gen_warn, LV_ALIGN_CENTER, 60, 110);
+    lv_obj_set_style_text_color(img_gen_warn, lv_color_darken(COLOR_WARN_RED, LV_OPA_50), 0);
+
+    img_check_engine = lv_label_create(left_meter);
+    lv_label_set_text(img_check_engine, "CHECK\nENGINE");
+    lv_obj_align(img_check_engine, LV_ALIGN_CENTER, 0, 140);
+    lv_obj_set_style_text_align(img_check_engine, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_set_style_text_color(img_check_engine, lv_color_darken(COLOR_WARN_ORANGE, LV_OPA_50), 0);
+}
+
+/* RIGHT CLUSTER: Speedometer & Odometers */
+static void create_right_cluster(lv_obj_t *parent) {
+    speed_meter = lv_meter_create(parent);
+    lv_obj_set_size(speed_meter, 500, 500);
+    lv_obj_align(speed_meter, LV_ALIGN_RIGHT_MID, -120, 0);
+    lv_obj_set_style_bg_color(speed_meter, COLOR_VINTAGE_BLACK, 0);
+    lv_obj_set_style_border_color(speed_meter, COLOR_CHROME, 0);
+    lv_obj_set_style_border_width(speed_meter, 12, 0);
+    lv_obj_set_style_radius(speed_meter, LV_RADIUS_CIRCLE, 0);
+
+    lv_meter_scale_t *scale = lv_meter_add_scale(speed_meter);
+    lv_meter_set_scale_ticks(speed_meter, scale, 17, 3, 15, COLOR_VINTAGE_WHITE); // Ticks for 0-160
+    lv_meter_set_scale_major_ticks(speed_meter, scale, 2, 4, 25, COLOR_VINTAGE_WHITE, 15);
+    lv_meter_set_scale_range(speed_meter, scale, 0, 160, 270, 135);
+
+    speed_needle = lv_meter_add_needle_line(speed_meter, scale, 5, COLOR_NEEDLE_ORANGE, -10);
+
+    /* MPH Text Label */
+    lv_obj_t *lbl_mph = lv_label_create(speed_meter);
+    lv_label_set_text(lbl_mph, "MPH");
+    lv_obj_set_style_text_color(lbl_mph, COLOR_VINTAGE_WHITE, 0);
+    lv_obj_align(lbl_mph, LV_ALIGN_CENTER, 0, 80);
+
+    /* Classic Odometer Roller Emulation */
+    lbl_odo = lv_label_create(speed_meter);
+    lv_label_set_text(lbl_odo, "092107");
+    lv_obj_set_style_text_color(lbl_odo, lv_color_black(), 0);
+    lv_obj_set_style_bg_color(lbl_odo, COLOR_VINTAGE_WHITE, 0);
+    lv_obj_set_style_bg_opa(lbl_odo, LV_OPA_COVER, 0);
+    lv_obj_set_style_pad_all(lbl_odo, 4, 0);
+    lv_obj_set_style_text_letter_space(lbl_odo, 4, 0);
+    lv_obj_align(lbl_odo, LV_ALIGN_CENTER, 0, -50);
+
+    /* Trip Meter Roller Emulation */
+    lbl_trip = lv_label_create(speed_meter);
+    lv_label_set_text(lbl_trip, "0003");
+    lv_obj_set_style_text_color(lbl_trip, lv_color_black(), 0);
+    lv_obj_set_style_bg_color(lbl_trip, COLOR_VINTAGE_WHITE, 0);
+    lv_obj_set_style_bg_opa(lbl_trip, LV_OPA_COVER, 0);
+    lv_obj_set_style_pad_all(lbl_trip, 3, 0);
+    lv_obj_set_style_text_letter_space(lbl_trip, 4, 0);
+    lv_obj_align(lbl_trip, LV_ALIGN_CENTER, 0, 20);
+
+    /* Chrome Center Cap */
+    lv_obj_t *center_cap = lv_obj_create(speed_meter);
+    lv_obj_set_size(center_cap, 85, 85);
+    lv_obj_align(center_cap, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_set_style_bg_color(center_cap, COLOR_VINTAGE_BLACK, 0);
+    lv_obj_set_style_border_color(center_cap, COLOR_CHROME, 0);
+    lv_obj_set_style_border_width(center_cap, 5, 0);
+    lv_obj_set_style_radius(center_cap, LV_RADIUS_CIRCLE, 0);
+}
+
+/* CENTER CLUSTER: Vintage Clock, Turn Signal Indicators, CAN-bus Screen */
+static void create_center_cluster(lv_obj_t *parent) {
+    /* Top: Small Circular VDO Clock */
+    lv_obj_t *clock_meter = lv_meter_create(parent);
+    lv_obj_set_size(clock_meter, 200, 200);
+    lv_obj_align(clock_meter, LV_ALIGN_TOP_MID, 0, 60);
+    lv_obj_set_style_bg_color(clock_meter, COLOR_VINTAGE_BLACK, 0);
+    lv_obj_set_style_border_color(clock_meter, COLOR_CHROME, 0);
+    lv_obj_set_style_border_width(clock_meter, 6, 0);
+    lv_obj_set_style_radius(clock_meter, LV_RADIUS_CIRCLE, 0);
+
+    lv_meter_scale_t *scale_clock = lv_meter_add_scale(clock_meter);
+    lv_meter_set_scale_ticks(clock_meter, scale_clock, 12, 2, 8, COLOR_VINTAGE_WHITE);
+    lv_meter_set_scale_range(clock_meter, scale_clock, 0, 12, 360, 270);
+
+    clock_hour_hand = lv_meter_add_needle_line(clock_meter, scale_clock, 4, COLOR_VINTAGE_WHITE, -30);
+    clock_min_hand  = lv_meter_add_needle_line(clock_meter, scale_clock, 2, COLOR_VINTAGE_WHITE, -10);
+
+    /* Middle: Vintage Turn Signals & High Beam Row */
+    lv_obj_t *indicator_row = lv_obj_create(parent);
+    lv_obj_set_size(indicator_row, 240, 50);
+    lv_obj_align(indicator_row, LV_ALIGN_CENTER, 0, 60);
+    lv_obj_set_style_bg_opa(indicator_row, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(indicator_row, 0, 0);
+
+    lv_obj_t *left_arrow = lv_label_create(indicator_row);
+    lv_label_set_text(left_arrow, "◀");
+    lv_obj_set_style_text_color(left_arrow, lv_color_make(0x00, 0xFF, 0x00), 0);
+    lv_obj_align(left_arrow, LV_ALIGN_LEFT_MID, 10, 0);
+
+    lv_obj_t *high_beam = lv_label_create(indicator_row);
+    lv_label_set_text(high_beam, "≡☼≡");
+    lv_obj_set_style_text_color(high_beam, lv_color_make(0x00, 0x00, 0xFF), 0);
+    lv_obj_align(high_beam, LV_ALIGN_CENTER, 0, 0);
+
+    lv_obj_t *right_arrow = lv_label_create(indicator_row);
+    lv_label_set_text(right_arrow, "▶");
+    lv_obj_set_style_text_color(right_arrow, lv_color_make(0x00, 0xFF, 0x00), 0);
+    lv_obj_align(right_arrow, LV_ALIGN_RIGHT_MID, -10, 0);
+
+    /* Bottom: CAN-bus Diagnostic Screen & Shift Light (Replacing Old Gear Indicator Window) */
+    can_status_box = lv_obj_create(parent);
+    lv_obj_set_size(can_status_box, 240, 160);
+    lv_obj_align(can_status_box, LV_ALIGN_BOTTOM_MID, 0, -80);
+    lv_obj_set_style_bg_color(can_status_box, lv_color_make(0x0D, 0x0D, 0x0D), 0);
+    lv_obj_set_style_border_color(can_status_box, COLOR_CHROME, 0);
+    lv_obj_set_style_border_width(can_status_box, 3, 0);
+    lv_obj_set_style_radius(can_status_box, 6, 0);
+
+    /* Dynamic Shift Light Bar inside the diagnostic box */
+    shift_light = lv_bar_create(can_status_box);
+    lv_obj_set_size(shift_light, 210, 20);
+    lv_obj_align(shift_light, LV_ALIGN_TOP_MID, 0, 10);
+    lv_obj_set_style_bg_color(shift_light, lv_color_make(0x22, 0x22, 0x22), 0);
+    lv_obj_set_style_bg_color(shift_light, lv_color_make(0xFF, 0x11, 0x00), LV_PART_INDICATOR);
+
+    /* CAN log message text */
+    can_log_label = lv_label_create(can_status_box);
+    lv_label_set_text(can_log_label, "HALTECH CAN: OK\nSYS VOLT: 14.1V\nNO ERRORS");
+    lv_obj_set_style_text_color(can_log_label, lv_color_make(0x00, 0xFF, 0x66), 0);
+    lv_obj_set_style_text_font(can_log_label, &lv_font_montserrat_12, 0);
+    lv_obj_align(can_log_label, LV_ALIGN_BOTTOM_LEFT, 5, -10);
+}
+
+/* Call this updater loop function with CAN payload fields decoded from Haltech Elite */
+void update_dashboard_data(float speed_mph, float water_temp_f, float fuel_percent, float oil_psi, 
+                           int rpm, int is_mil, int is_brake, int is_alt_fault, const char* diagnostic_msg) {
+    
+    /* 1. Update needles */
+    lv_meter_set_indicator_value(speed_meter, speed_needle, (int32_t)speed_mph);
+    lv_meter_set_indicator_value(left_meter, temp_needle, (int32_t)water_temp_f);
+    lv_meter_set_indicator_value(left_meter, fuel_needle, (int32_t)fuel_percent);
+    lv_meter_set_indicator_value(left_meter, oil_needle, (int32_t)oil_psi);
+
+    /* 2. Modern Warning Lights (Check Engine, Brake warning, Alternator) */
+    if (is_mil) {
+        lv_obj_set_style_text_color(img_check_engine, COLOR_WARN_ORANGE, 0); // Illuminated orange
+    } else {
+        lv_obj_set_style_text_color(img_check_engine, lv_color_darken(COLOR_WARN_ORANGE, LV_OPA_80), 0);
+    }
+
+    if (is_brake) {
+        lv_obj_set_style_text_color(img_brake_warn, COLOR_WARN_RED, 0); // Illuminated Red
+    } else {
+        lv_obj_set_style_text_color(img_brake_warn, lv_color_darken(COLOR_WARN_RED, LV_OPA_80), 0);
+    }
+
+    if (is_alt_fault) {
+        lv_obj_set_style_text_color(img_gen_warn, COLOR_WARN_RED, 0); // Illuminated Red
+    } else {
+        lv_obj_set_style_text_color(img_gen_warn, lv_color_darken(COLOR_WARN_RED, LV_OPA_80), 0);
+    }
+
+    /* 3. Shift Light Logic (RPM based, assume shift point at 6000 RPM) */
+    if (rpm > 5500) {
+        lv_bar_set_value(shift_light, 100, LV_ANIM_OFF);
+        // Toggle flashing/warning behavior at redline
+        if (rpm > 6000 && (lv_tick_get() % 200 < 100)) {
+            lv_obj_set_style_bg_color(shift_light, lv_color_white(), LV_PART_INDICATOR);
+        } else {
+            lv_obj_set_style_bg_color(shift_light, COLOR_WARN_RED, LV_PART_INDICATOR);
+        }
+    } else {
+        int percent = (rpm * 100) / 5500;
+        lv_bar_set_value(shift_light, percent, LV_ANIM_OFF);
+        lv_obj_set_style_bg_color(shift_light, lv_color_make(0x00, 0xFF, 0x00), LV_PART_INDICATOR); // Green bar
+    }
+
+    /* 4. CAN Diagnostics Log Area */
+    if (diagnostic_msg != NULL) {
+        lv_label_set_text(can_log_label, diagnostic_msg);
+    }
+}
+
+/* Entry Point */
+void w108_dashboard_init(void) {
+    lv_obj_t *screen = lv_scr_act();
+    
+    /* Apply horizontal ribbing pattern to replicate original cluster plastic face */
+    draw_background_ribs(screen);
+
+    /* Generate Left, Center and Right elements */
+    create_left_cluster(screen);
+    create_right_cluster(screen);
+    create_center_cluster(screen);
+
+    /* Set default mockup values */
+    update_dashboard_data(55.0f, 175.0f, 75.0f, 30.0f, 2200, 0, 0, 0, "HALTECH CAN: OK\nLAMBDA: 0.98\nOIL TEMP: 92 C");
+}

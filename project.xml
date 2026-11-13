@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<project name="w108_classic_dash" lvgl_version="9.5.0">
+<project name="w108_classic_dash" lvgl_version="9.5.0" theme="simple">
     <targets>
         <target name="W108_Stretched_LCD">
-            <display width="1920" height="720" dpi="120" color_depth="32"/>
+            <display width="1920" height="720" dpi="120" color_depth="32" />
         </target>
     </targets>
-    <theme name="simple"/>
 </project>

@@ -12,10 +12,11 @@
         <int name="dial_size" value="500" />
     </consts>
     <images>
-        <file name="img_w108_bg" src_path="assets/w108_bg.png" />
-        <file name="img_left_face" src_path="assets/w108_left_face.png" />
-        <file name="img_speedo_face" src_path="assets/w108_speedo_face.png" />
-        <file name="img_orange_needle" src_path="assets/w108_orange_needle.png" />
-        <file name="img_clock_face" src_path="assets/w108_clock_face.png" />
+        <!-- <data> asks the viewer/editor to convert the PNG assets for preview. -->
+        <data name="img_w108_bg" src_path="assets/w108_bg.png" color_format="argb8888" />
+        <data name="img_left_face" src_path="assets/w108_left_face.png" color_format="argb8888" />
+        <data name="img_speedo_face" src_path="assets/w108_speedo_face.png" color_format="argb8888" />
+        <data name="img_orange_needle" src_path="assets/w108_orange_needle.png" color_format="argb8888" />
+        <data name="img_clock_face" src_path="assets/w108_clock_face.png" color_format="argb8888" />
     </images>
 </globals>

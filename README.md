@@ -1,28 +1,27 @@
-# Classic Mercedes W108/W109 LVGL Dashboard
+# LVGL W108 dashboard preview
 
-A skeuomorphic instrument-cluster concept for an LVGL display. The XML project files and PNG artwork are arranged for visual testing in the LVGL web viewer; the C sources are a separate, incomplete embedded integration and are not currently a standalone ESP-IDF application.
+This repository includes an XML mockup of a classic Mercedes W108/W109 instrument cluster. The preview is a **static design/layout test** with sample values; it does not exercise the C firmware, live data bindings, display drivers, or CAN hardware.
 
-## Preview in viewer.lvgl.io
+## Open in the LVGL viewer
 
-Load the project using these files together, preserving their paths:
+Use the XML project files and PNG artwork together, preserving the directory layout:
 
-- `project.xml`
-- `globals.xml`
-- `w108_screen.xml`
-- `assets/*.png`
+```text
+project.xml
+globals.xml
+w108_screen.xml
+assets/
+  w108_bg.png
+  w108_clock_face.png
+  w108_left_face.png
+  w108_orange_needle.png
+  w108_speedo_face.png
+```
 
-The `globals.xml` image paths are relative to the repository root and include the `assets/` directory. Initial telemetry subjects are defined there so the dashboard has sample values in the preview.
+Open/import the project in [viewer.lvgl.io](https://viewer.lvgl.io/). If the viewer requests a project archive, ZIP the three root XML files and the `assets/` directory without flattening the paths. The screen uses LVGL 9 XML widget syntax; images are registered in `globals.xml` with paths relative to the project root.
 
-The project targets a 1920 × 720, 32-bit display. If the viewer asks for a project archive, ZIP the listed XML files and the `assets/` directory without flattening the paths.
+The declared target is 1920 × 720. If the preview viewport is smaller, zoom or fit the canvas to view the complete cluster.
 
-## Current limitations
+## Firmware status
 
-- The C dashboard implementation is not yet a complete ESP32-S3/ESP-IDF application; display initialization, LVGL port/tick setup, and CAN receive integration still need to be provided by the target project.
-- `project.xml` selects LVGL 9.5.0 for the XML preview. The older C image and UI sources include LVGL 8-era APIs; they must be brought onto the same LVGL version before compiling together.
-- The `.c` files for the background and dial-face assets are not generated image descriptors. Use the PNG assets for the viewer, or regenerate LVGL-compatible C descriptors for the firmware build.
-
-## Layout
-
-- `src/`: dashboard C code and Haltech CAN frame decoder
-- `assets/`: source PNG artwork and generated/placeholder C assets
-- `project.xml`, `globals.xml`, `w108_screen.xml`: viewer project, constants/subjects/assets, and screen layout
+`src/` contains an early C dashboard and CAN decoder, not a complete ESP-IDF project. It still needs an ESP32-S3 display/LVGL port, an ESP-IDF `app_main()` integration, and a real CAN receive path. The current XML mockup is independent from those firmware sources.

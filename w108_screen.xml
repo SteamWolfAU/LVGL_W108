@@ -1,61 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<screen name="w108_screen">
-    <view>
-        <!-- 1. Master horizontally ribbed backplate -->
-        <lv_image src="img_w108_bg" width="100%" height="100%" align="center"/>
+<screen>
+    <styles>
+        <style name="style_screen" bg_color="0x101214" bg_opa="100%" />
+        <style name="style_pod" bg_color="0x111315" bg_opa="0%" border_width="0" radius="0" pad_all="0" />
+        <style name="style_warning_dim" text_color="0x55443b" text_font="montserrat_16" />
+        <style name="style_warning_orange" text_color="0xff8a32" text_font="montserrat_16" />
+        <style name="style_warning_red" text_color="0xff3030" text_font="montserrat_16" />
+        <style name="style_odo" bg_color="0xe9e3d6" bg_opa="100%" text_color="0x111111" text_font="montserrat_24" pad_left="8" pad_right="8" pad_top="3" pad_bottom="3" />
+        <style name="style_terminal" bg_color="0x080c09" bg_opa="100%" border_color="0x87908a" border_width="2" radius="6" pad_all="12" />
+        <style name="style_terminal_text" text_color="0x42ff75" text_font="montserrat_16" />
+        <style name="style_bar_bg" bg_color="0x242a26" bg_opa="100%" radius="4" />
+        <style name="style_bar_indicator" bg_color="0x36e96f" bg_opa="100%" radius="4" />
+    </styles>
+    <view style_bg_color="0x101214" style_bg_opa="100%">
+        <!-- 1920 x 720 backplate. This is intentionally a static preview screen. -->
+        <lv_image name="dashboard_background" src="img_w108_bg" width="100%" height="100%" inner_align="cover" />
 
-        <!-- ================= LEFT POD (500x500) ================= -->
-        <lv_obj width="#dial_size" height="#dial_size" align="left_mid" x="120" styles="style_transparent_pod">
-            <!-- Dial Face Artwork -->
-            <lv_image src="img_left_face" align="center"/>
-
-            <!-- Combined Quad Needles (Dynamic Rotation angle binding) -->
-            <!-- 2700 tenths of a degree mapping logic -->
-            <lv_image src="img_orange_needle" align="center" pivot_x="12" pivot_y="180" 
-                      bind_angle="{subj_water_temp - 100} / 150 * 900 - 1350"/> <!-- Temp sweeps bottom-left -->
-            <lv_image src="img_orange_needle" align="center" pivot_x="12" pivot_y="180" 
-                      bind_angle="{subj_fuel} / 100 * 900 - 450"/> <!-- Fuel sweeps top-left -->
-            <lv_image src="img_orange_needle" align="center" pivot_x="12" pivot_y="180" 
-                      bind_angle="{subj_oil} / 45 * 900 + 450"/> <!-- Oil sweeps right arc -->
-
-            <!-- Warning Lights (Dynamic color changes based on active subject states) -->
-            <lv_label text="CHECK ENGINE" align="center" y="140" 
-                      bind_style_text_color="subj_is_mil == 1 ? #color_warn_orange : 0x221100"/>
-            <lv_label text="BRAKE" align="center" x="-60" y="110" 
-                      bind_style_text_color="subj_is_brake == 1 ? #color_warn_red : 0x220000"/>
-            <lv_label text="GENER." align="center" x="60" y="110" 
-                      bind_style_text_color="subj_is_generator == 1 ? #color_warn_red : 0x220000"/>
+        <!-- Left multi-gauge pod -->
+        <lv_obj name="left_gauge_pod" width="500" height="500" align="left_mid" x="120" style_bg_opa="0%" style_border_width="0" style_pad_all="0" scrollbar_mode="off">
+            <lv_image name="left_dial_face" src="img_left_face" align="center" />
+            <lv_image name="temperature_needle" src="img_orange_needle" align="center" pivot_x="12" pivot_y="180" rotation="-420" />
+            <lv_image name="fuel_needle" src="img_orange_needle" align="center" pivot_x="12" pivot_y="180" rotation="225" />
+            <lv_image name="oil_needle" src="img_orange_needle" align="center" pivot_x="12" pivot_y="180" rotation="990" />
+            <lv_label name="check_engine_warning" align="center" y="140" text="CHECK ENGINE" style_text_color="0x55443b" style_text_font="montserrat_16" />
+            <lv_label name="brake_warning" align="center" x="-70" y="110" text="BRAKE" style_text_color="0x55443b" style_text_font="montserrat_16" />
+            <lv_label name="alternator_warning" align="center" x="70" y="110" text="GENER." style_text_color="0x55443b" style_text_font="montserrat_16" />
+            <lv_label name="water_temp_readout" align="bottom_left" x="16" y="-12" text="WATER 175°F" style_text_color="0xe9e3d6" />
+            <lv_label name="fuel_readout" align="bottom_mid" y="-12" text="FUEL 75%" style_text_color="0xe9e3d6" />
+            <lv_label name="oil_readout" align="bottom_right" x="-16" y="-12" text="OIL 30 PSI" style_text_color="0xe9e3d6" />
         </lv_obj>
 
-        <!-- ================= SPEEDOMETER POD (500x500) ================= -->
-        <lv_obj width="#dial_size" height="#dial_size" align="right_mid" x="-120" styles="style_transparent_pod">
-            <!-- Speedo Face Artwork -->
-            <lv_image src="img_speedo_face" align="center"/>
-
-            <!-- Rotating Speedo Needle -->
-            <lv_image src="img_orange_needle" align="center" pivot_x="12" pivot_y="180" 
-                      bind_angle="{subj_speed_mph} / 160 * 2700 - 1350"/>
-
-            <!-- Dynamic Odometer displays layered over cutouts -->
-            <lv_label text="092107" align="center" y="-50" styles="style_odometer"/>
-            <lv_label text="000.3" align="center" y="20" styles="style_odometer"/>
+        <!-- Main speedometer pod -->
+        <lv_obj name="speedometer_pod" width="500" height="500" align="right_mid" x="-120" style_bg_opa="0%" style_border_width="0" style_pad_all="0" scrollbar_mode="off">
+            <lv_image name="speedometer_dial_face" src="img_speedo_face" align="center" />
+            <lv_image name="speedometer_needle" src="img_orange_needle" align="center" pivot_x="12" pivot_y="180" rotation="-420" />
+            <lv_label name="speed_value" align="center" y="85" text="55 MPH" style_text_color="0xe9e3d6" style_text_font="montserrat_32" />
+            <lv_label name="odometer_value" align="center" y="-54" text="092107" />
+            <lv_label name="trip_value" align="center" y="-12" text="000.3" />
         </lv_obj>
 
-        <!-- ================= MIDDLE DIAGNOSTIC SECTION ================= -->
-        <!-- Central area replacing the old mechanical gear indicator slot -->
-        <lv_obj width="240" height="160" align="bottom_mid" y="-80" 
-                bg_color="#color_msg_terminal" border_color="#color_chrome" border_width="3" radius="6">
-            
-            <!-- Shift Light bar (Standard Green, warning Red if > 5500 RPM) -->
-            <lv_bar width="210" height="20" align="top_mid" y="10" 
-                    bg_color="0x222222" 
-                    bind_value="{subj_rpm} / 5500 * 100" 
-                    bind_style_bg_color="subj_rpm > 5500 ? #color_warn_red : 0x00FF00" 
-                    style_selector="indicator"/>
-
-            <!-- Real-Time Decoded CAN diagnostics terminal logs -->
-            <lv_label align="bottom_left" x="5" y="-10" text_color="#color_text_green" 
-                      bind_text="subj_diag_msg"/>
+        <!-- Center clock and CAN/shift panel -->
+        <lv_image name="clock_face" src="img_clock_face" width="150" height="150" align="top_mid" y="30" />
+        <lv_obj name="diagnostic_panel" width="280" height="170" align="bottom_mid" y="-34" style_bg_color="0x080c09" style_bg_opa="100%" style_border_color="0x87908a" style_border_width="2" style_radius="6" style_pad_all="12" scrollbar_mode="off">
+            <lv_label name="shift_label" align="top_left" text="ENGINE RPM" style_text_color="0xe9e3d6" />
+            <lv_bar name="shift_bar" width="100%" height="18" align="top_mid" y="26" min_value="0" max_value="7000" value="2200">
+                <style name="style_bar_bg" selector="main" />
+                <style name="style_bar_indicator" selector="indicator" />
+            </lv_bar>
+            <lv_label name="rpm_value" align="top_right" y="50" text="2200 RPM" style_text_color="0xe9e3d6" />
+            <lv_label name="can_diagnostics" align="bottom_left" width="100%" text="CAN ACTIVE&#10;SYS VOLT: 14.1V&#10;NO ERRORS" style_text_color="0x42ff75" style_text_font="montserrat_16" />
         </lv_obj>
     </view>
 </screen>

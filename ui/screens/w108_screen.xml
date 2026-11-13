@@ -5,7 +5,7 @@
         <style name="style_bar_indicator" bg_color="0x36e96f" bg_opa="100%" radius="4" />
     </styles>
     <view style_bg_color="0x101214" style_bg_opa="100%">
-        <lv_image name="dashboard_background" src="img_w108_bg" width="100%" height="100%" inner_align="cover" />
+        <lv_image name="dashboard_background" src="img_w108_bg" width="100%" height="100%" />
 
         <lv_obj name="left_gauge_pod" width="500" height="500" align="left_mid" x="120" style_bg_opa="0%" style_border_width="0" style_pad_all="0">
             <lv_image name="left_dial_face" src="img_left_face" align="center" />
@@ -31,10 +31,7 @@
         <lv_image name="clock_face" src="img_clock_face" width="150" height="150" align="top_mid" y="30" />
         <lv_obj name="diagnostic_panel" width="280" height="170" align="bottom_mid" y="-34" style_bg_color="0x080c09" style_bg_opa="100%" style_border_color="0x87908a" style_border_width="2" style_radius="6" style_pad_all="12">
             <lv_label name="shift_label" align="top_left" text="ENGINE RPM" style_text_color="0xe9e3d6" />
-            <lv_bar name="shift_bar" width="100%" height="18" align="top_mid" y="26" min_value="0" max_value="7000" value="2200">
-                <style name="style_bar_bg" selector="main" />
-                <style name="style_bar_indicator" selector="indicator" />
-            </lv_bar>
+            <lv_bar name="shift_bar" width="100%" height="18" align="top_mid" y="26" min_value="0" max_value="7000" value="2200" styles="style_bar_bg:main, style_bar_indicator:indicator" />
             <lv_label name="rpm_value" align="top_right" y="50" text="2200 RPM" style_text_color="0xe9e3d6" />
             <lv_label name="can_diagnostics" align="bottom_left" width="100%" text="CAN ACTIVE&#10;SYS VOLT: 14.1V&#10;NO ERRORS" style_text_color="0x42ff75" />
         </lv_obj>
